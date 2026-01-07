@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Stream Player</title>
+    <style>
+        body {
+            margin: 0;
+            background-color: #000;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            font-family: sans-serif;
+        }
+        video {
+            max-width: 100%;
+            max-height: 100%;
+            box-shadow: 0 0 50px rgba(0,0,0,1);
+        }
+         </style>
+</head>
+<body>
+
+    <!-- created to open video links that can be streamed directly in the browser but the browser misinterprets them as downloads. -->
+
+    <video id="myPlayer" controls autoplay>
+        <source id="videoSource" src="" type="video/mp4">
+    </video>
+
+<script>
+    function loadVideo() {
+        const url = prompt("Paste your video URL here:");
+        
+        if (url && url.trim() !== "") {
+            const video = document.getElementById('myPlayer');
+            const source = document.getElementById('videoSource');
+            
+            source.src = url.trim();
+            video.load();
+            video.play();
+        }
+    }
+
+    // Run the prompt automatically when the page finishes loading
+    window.onload = loadVideo;
+</script>
+
+</body>
+</html>
