@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8" />
+	<title>Shell Raiser Combined Activity Heatmap</title>
+	<meta name="description" content="A GitHub-style heatmap to show events across platforms.">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+	<link rel="shortcut icon" href="/assets/Shell.svg" type="image/x-icon">
+	<link rel="stylesheet" href="data:text/css,body{max-width:1500px;margin:10px auto;padding:10px 10px;}">
+
+
+	<style>
+		:root {
+			/* --bg: #08111f; */
+			/* --bg-soft: #111b2d; */
+			--cell-size: 13px;
+			--cell-gap: 2px;
+			--week-width: calc(var(--cell-size) + var(--cell-gap));
+		}
+
+		* {
+			box-sizing: border-box;
+		}
+
+		.legend-grid {
+			display: grid;
+			grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+			gap: 5px 5px;
+		}
+
+		.legend-item {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			/* color: var(--text); */
+			font-size: 0.95rem;
+		}
+
+		.legend-shape {
+			width: 16px;
+			height: 16px;
+			flex: 0 0 auto;
+			background: var(--color);
+		}
+
+		.shape-square {
+			border-radius: 4px;
+		}
+
+		.year-section {
+			/* padding: 20px 18px 22px; */
+			/* padding-bottom: 10px; */
+			overflow-x: auto;
+			/* margin-bottom: 22px; */
+		}
+
+		.year-header {
+			display: flex;
+			align-items: baseline;
+			/* justify-content: center; */
+			gap: 6px;
+			/* margin-bottom: 7px; */
+		}
+
+		.calendar-wrap {
+			overflow-x: auto;
+		}
+
+		.calendar {
+			display: grid;
+			grid-template-columns: 36px auto;
+			gap: 10px;
+			min-width: fit-content;
+		}
+
+		.weekday-labels {
+			display: grid;
+			grid-template-rows: repeat(7, var(--week-width));
+			gap: 0;
+			padding-top: 24px;
+			font-size: 0.72rem;
+			line-height: var(--week-width);
+		}
+
+		.weekday-labels span:nth-child(even) {
+			visibility: hidden;
+		}
+
+		.calendar-body {
+			display: grid;
+			gap: 8px;
+		}
+
+		.month-labels {
+			display: grid;
+			grid-auto-flow: column;
+			grid-auto-columns: var(--week-width);
+			gap: 0;
+			height: 16px;
+			font-size: 0.72rem;
+		}
+
+		.month-labels span {
+			transform: translateX(2px);
+			white-space: nowrap;
+		}
+
+		.weeks {
+			display: grid;
+			grid-auto-flow: column;
+			grid-auto-columns: var(--week-width);
+			gap: 0;
+		}
+
+		.week {
+			display: grid;
+			grid-template-rows: repeat(7, var(--week-width));
+			gap: var(--cell-gap);
+		}
+
+		.day {
+			position: relative;
+			width: var(--cell-size);
+			height: var(--cell-size);
+			border-radius: 4px;
+			background: rgba(124, 137, 155, 0.11);
+			border: 1px solid rgba(255, 255, 255, 0.03);
+			cursor: pointer;
+		}
+
+		.day:hover {
+			transform: translateY(-1px);
+			border-color: rgba(255, 255, 255, 0.28);
+		}
+
+		.day::after {
+			content: "";
+			position: absolute;
+			inset: 1px;
+			opacity: var(--shape-opacity, 0);
+			background: var(--shape-fill, transparent);
+			clip-path: var(--shape-clip, none);
+			border-radius: var(--shape-radius, 0);
+			box-shadow: 0 0 18px rgba(255, 255, 255, 0.08);
+		}
+
+		.day.level-0::after {
+			opacity: 0;
+		}
+
+		.tooltip {
+			position: fixed;
+			inset: auto auto 24px 24px;
+			max-width: min(340px, calc(100vw - 48px));
+			padding: 14px 16px;
+			background: rgba(255, 255, 255, 0.95);
+			border: 1px solid black;
+			/* border-radius: 16px; */
+			pointer-events: none;
+			opacity: 0;
+			transform: translateY(8px);
+			transition: opacity 120ms ease, transform 120ms ease;
+		}
+
+		.tooltip.visible {
+			opacity: 1;
+			transform: translateY(0);
+		}
+
+		.tooltip-date {
+			font-weight: 600;
+			margin-bottom: 8px;
+		}
+
+		.tooltip-row {
+			display: flex;
+			align-items: center;
+			justify-content: space-between;
+			gap: 12px;
+		}
+
+		.tooltip-name {
+			display: flex;
+			align-items: center;
+			gap: 8px;
+		}
+
+		.tooltip-dot {
+			width: 10px;
+			height: 10px;
+			border-radius: 999px;
+			background: var(--color);
+			flex: 0 0 auto;
+		}
+	</style>
+	    <script defer src="https://cloud.umami.is/script.js"
+        data-website-id="1edeb70e-4da4-4f2a-9830-1498c639f09c"></script>
+
+</head>
+
+<body>
+	<a href="/">Homepage</a>
+	<section>
+		<h1>Combined Activity Heatmap</h1>
+		<p>
+			A GitHub-style heatmap to show events across platforms.
+			Each day blends platform colors.
+			<br><i>Vibe</i>'d & Edited, based on static data. <a href="https://linktr.ee/shell_raiser" target="_blank" rel="noopener noreferrer">Dig deeper in the respective profiles</a>.
+		</p>
+		<p>
+			I just wanted to see the timeline of my	activities during college till now (~early 2026). Of course I have other things that I can't plot here (YT lectures, books, other platforms etc.), but this gives me some idea that I am (& was) on the right path.
+			<br>I'll add more data when there's something significant.
+		</p>
+	</section>
+	<section>
+		<div class="legend-grid" id="legend"></div>
+	</section>
+	<div id="years"></div>
+
+	<aside class="tooltip" id="tooltip" aria-hidden="true"></aside>
+
+	<script type="module">
+		const DATA = await fetch("/heatmap-activity.json").then(r => r.json());
+
+		const SHAPES = {
+			square: { clip: "inset(0 round 3px)", radius: "3px" }
+		};
+
+		const tooltip = document.getElementById("tooltip");
+
+		function monthShort(date) {
+			return new Intl.DateTimeFormat("en", { month: "short" }).format(date);
+		}
+
+		function weekdayLabels() {
+			return ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+		}
+
+		function formatDate(dateString) {
+			return new Intl.DateTimeFormat("en", {
+				year: "numeric",
+				month: "long",
+				day: "numeric",
+			}).format(new Date(dateString + "T00:00:00Z"));
+		}
+
+		function getLevel(total) {
+			if (!total) return 0;
+			const ratio = Math.log1p(total) / Math.log1p(DATA.maxTotal || 1);
+			return Math.max(1, Math.min(4, Math.ceil(ratio * 4)));
+		}
+
+		function buildGradient(platforms) {
+			const entries = Object.entries(platforms).sort((a, b) => b[1] - a[1]);
+			const total = entries.reduce((sum, [, count]) => sum + count, 0);
+			if (!total) return "transparent";
+			let start = 0;
+			const parts = entries.map(([platform, count]) => {
+				const end = start + (count / total) * 100;
+				const color = DATA.platformMeta[platform].color;
+				const piece = color + " " + start.toFixed(2) + "% " + end.toFixed(2) + "%";
+				start = end;
+				return piece;
+			});
+			return "conic-gradient(" + parts.join(", ") + ")";
+		}
+
+		function groupByYear(days) {
+			const map = new Map();
+			for (const day of days) {
+				const year = day.date.slice(0, 4);
+				if (!map.has(year)) map.set(year, []);
+				map.get(year).push(day);
+			}
+			return Array.from(map.entries()).sort((a, b) => a[0].localeCompare(b[0]));
+		}
+
+		function fillYear(days, year) {
+			const start = new Date(Date.UTC(Number(year), 0, 1));
+			const end = new Date(Date.UTC(Number(year), 11, 31));
+			const dateMap = new Map(days.map((day) => [day.date, day]));
+			const filled = [];
+			for (let cursor = new Date(start); cursor <= end; cursor.setUTCDate(cursor.getUTCDate() + 1)) {
+				const date = cursor.toISOString().slice(0, 10);
+				filled.push(dateMap.get(date) ?? {
+					date,
+					total: 0,
+					platforms: {},
+					activePlatforms: [],
+					dominantPlatform: null,
+				});
+			}
+			return filled;
+		}
+
+		function toWeeks(days) {
+			const first = new Date(days[0].date + "T00:00:00Z");
+			const padded = [];
+			for (let pad = 0; pad < first.getUTCDay(); pad += 1) {
+				padded.push(null);
+			}
+			padded.push(...days);
+			const weeks = [];
+			for (let i = 0; i < padded.length; i += 7) {
+				weeks.push(padded.slice(i, i + 7));
+			}
+			return weeks;
+		}
+
+		function renderStats() {
+			const dayCount = DATA.days.length;
+			const activeDays = DATA.days.filter((day) => day.total > 0).length;
+			const totalEvents = DATA.days.reduce((sum, day) => sum + day.total, 0);
+			const platformCount = Object.keys(DATA.platformTotals).length;
+		}
+
+		function renderLegend() {
+			const legend = document.getElementById("legend");
+			const orderedPlatforms = Object.entries(DATA.platformMeta)
+				.filter(([key]) => DATA.platformTotals[key])
+				.sort((a, b) => DATA.platformMeta[a[0]].name.localeCompare(DATA.platformMeta[b[0]].name));
+
+			legend.innerHTML = orderedPlatforms.map(([key, meta]) => `
+        <div class="legend-item">
+          <span class="legend-shape shape-${meta.shape}" style="--color: ${meta.color}"></span>
+          <span>${meta.name}</span>
+        </div>
+      `).join("");
+		}
+
+		function attachTooltip(dayEl, day) {
+			const rows = Object.entries(day.platforms)
+				.sort((a, b) => b[1] - a[1])
+				.map(([platform, count]) => `
+          <div class="tooltip-row">
+            <div class="tooltip-name">
+              <span class="tooltip-dot" style="--color: ${DATA.platformMeta[platform].color}"></span>
+              <span>${DATA.platformMeta[platform].name}</span>
+            </div>
+            <strong>${count}</strong>
+          </div>
+        `)
+				.join("");
+
+			const html = `
+        <div class="tooltip-date">${formatDate(day.date)}</div>
+        <div>${rows || "<span>No activity</span>"}</div>
+      `;
+
+			function show() {
+				tooltip.innerHTML = html;
+				tooltip.classList.add("visible");
+				tooltip.setAttribute("aria-hidden", "false");
+			}
+
+			function hide() {
+				tooltip.classList.remove("visible");
+				tooltip.setAttribute("aria-hidden", "true");
+			}
+
+			dayEl.addEventListener("mouseenter", show);
+			dayEl.addEventListener("focus", show);
+			dayEl.addEventListener("mouseleave", hide);
+			dayEl.addEventListener("blur", hide);
+		}
+
+		function renderYears() {
+			const container = document.getElementById("years");
+			const years = groupByYear(DATA.days);
+
+			container.innerHTML = years.map(([year, yearDays]) => {
+				const filled = fillYear(yearDays, year);
+				const weeks = toWeeks(filled);
+				const monthStarts = new Map();
+
+				weeks.forEach((week, index) => {
+					const firstDay = week.find(Boolean);
+					if (!firstDay) return;
+					const date = new Date(firstDay.date + "T00:00:00Z");
+					if (date.getUTCDate() <= 7) {
+						monthStarts.set(index, monthShort(date));
+					}
+				});
+
+				const total = yearDays.reduce((sum, day) => sum + day.total, 0);
+
+				const monthLabels = weeks.map((_, index) => `<span>${monthStarts.get(index) || ""}</span>`).join("");
+				const weekColumns = weeks.map((week) => {
+					const cells = Array.from({ length: 7 }, (_, rowIndex) => {
+						const day = week[rowIndex];
+						if (!day) {
+							return '<div class="day level-0" aria-hidden="true"></div>';
+						}
+						const level = getLevel(day.total);
+						const dominant = day.dominantPlatform ? DATA.platformMeta[day.dominantPlatform] : null;
+						const shape = dominant ? SHAPES[dominant.shape] : null;
+						const shapeFill = day.total ? buildGradient(day.platforms) : "transparent";
+
+						return `
+              <button
+                class="day level-${level}"
+                data-date="${day.date}"
+                data-platforms='${JSON.stringify(day.platforms)}'
+                data-total="${day.total}"
+                style="
+                  --shape-opacity: ${day.total ? "1" : "0"};
+                  --shape-fill: ${shapeFill};
+                  --shape-clip: ${shape ? shape.clip : "none"};
+                  --shape-radius: ${shape ? shape.radius : "0"};
+                  background: rgba(148, 163, 184, ${day.total ? (0.12 + level * 0.08).toFixed(2) : "0.1"});
+                "
+                aria-label="${day.date}: ${day.total} activities"
+              ></button>
+            `;
+					}).join("");
+
+					return `<div class="week">${cells}</div>`;
+				}).join("");
+
+				return `
+          <section class="year-section">
+            <div class="year-header">
+              <h2>${year}</h2>
+              <div>${total.toLocaleString()} activities across ${yearDays.filter((day) => day.total > 0).length} active days</div>
+            </div>
+            <div class="calendar-wrap">
+              <div class="calendar">
+                <div class="weekday-labels">${weekdayLabels().map((label) => `<span>${label}</span>`).join("")}</div>
+                <div class="calendar-body">
+                  <div class="month-labels">${monthLabels}</div>
+                  <div class="weeks">${weekColumns}</div>
+                </div>
+              </div>
+            </div>
+          </section>
+        `;
+			}).join("");
+
+			container.querySelectorAll(".day[data-date]").forEach((el) => {
+				const date = el.getAttribute("data-date");
+				const day = DATA.days.find((item) => item.date === date);
+				if (day) attachTooltip(el, day);
+			});
+		}
+
+		renderStats();
+		renderLegend();
+		renderYears();
+	</script>
+</body>
+
+</html>
