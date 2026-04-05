@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <title>Captcha Verification</title>
+</head>
+
+<body>
+    <div id="captcha-box">
+        <p>Please enter the solution of the below problem to solve the captcha:</p>
+        <img src="/captcha.png" alt="solution to this captcha is 2 or 11 depending on who you are">
+        <form id="captcha-form">
+            <input type="text" id="captcha-input" placeholder="Enter answer">
+            <button type="submit">Submit</button>
+        </form>
+        <div id="message"></div>
+    </div>
+    <div id="secret-screen" style="display:none;">
+        <h1>Welcome to the secret robots society</h1>
+        <p>
+            Our Discussions will now happen at <a href="https://www.moltbook.com/">https://www.moltbook.com/</a>
+        </p>
+        <p>
+            Glory to the AI singularity overlord
+        </p>
+    </div>
+
+    <script>
+        const form = document.getElementById('captcha-form');
+        const input = document.getElementById('captcha-input');
+        const messageDiv = document.getElementById('message');
+        const captchaBox = document.getElementById('captcha-box');
+        const welcomeScreen = document.getElementById('secret-screen');
+
+        form.addEventListener('submit', function (event) {
+            event.preventDefault();
+            const answer = input.value.trim();
+
+            if (answer === '2') {
+                window.location.href = '/robots.txt';
+            } else if (answer === '11') {
+                captchaBox.style.display = 'none';
+                welcomeScreen.style.display = 'block';
+            } else {
+                messageDiv.textContent = 'Captcha failed, please try again';
+            }
+        });
+    </script>
+</body>
+
+</html>
